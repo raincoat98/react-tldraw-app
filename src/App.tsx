@@ -3,17 +3,38 @@ import { AssetRecordType, Editor, Tldraw, track, useEditor } from "tldraw";
 import "./custom-ui.css";
 
 const extendSelectTool = (editor: Editor) => {
-  const handleDoubleClick = () => {
-    const isSelectTool = editor.getCurrentToolId() === "select";
+  const DOUBLE_TAP_DELAY = 300;
+  let lastTouchEndTime = 0;
 
+  const changeSelectToolState = () => {
+    const isSelectTool = editor.getCurrentToolId() === "select";
     if (isSelectTool) {
       editor.setCurrentTool("select.idle");
     }
   };
 
+  // Handlers
+  const handleDoubleClick = (event: MouseEvent) => {
+    event.preventDefault();
+    changeSelectToolState();
+  };
+
+  const handleTouchEnd = (event: TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTouchEndTime <= DOUBLE_TAP_DELAY) {
+      event.preventDefault();
+      changeSelectToolState();
+    }
+    lastTouchEndTime = now;
+  };
+
   window.addEventListener("dblclick", handleDoubleClick);
+  window.addEventListener("touchend", handleTouchEnd);
+
+  // Cleanup function
   return () => {
     window.removeEventListener("dblclick", handleDoubleClick);
+    window.removeEventListener("touchend", handleTouchEnd);
   };
 };
 
