@@ -1,13 +1,137 @@
-import { Tldraw } from "tldraw";
+import { useEffect, useState } from "react";
+import { AssetRecordType, Editor, Tldraw, track, useEditor } from "tldraw";
+import "./custom-ui.css";
 
-function App() {
+export default function App() {
+  const [editor, setEditor] = useState<Editor | null>(null);
+
+  const handleUploadImage = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !editor) return;
+
+      const assetId = AssetRecordType.createId();
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const image = new Image();
+        image.src = reader.result as string;
+        image.onload = () => {
+          const imageWidth = image.width;
+          const imageHeight = image.height;
+
+          editor.createAssets([
+            {
+              id: assetId,
+              type: "image",
+              typeName: "asset",
+              props: {
+                name: file.name,
+                src: reader.result as string,
+                w: imageWidth,
+                h: imageHeight,
+                mimeType: file.type,
+                isAnimated: false,
+              },
+              meta: {},
+            },
+          ]);
+          editor.createShape({
+            type: "image",
+            x: (window.innerWidth - imageWidth) / 2,
+            y: (window.innerHeight - imageHeight) / 2,
+            props: {
+              assetId,
+              w: imageWidth,
+              h: imageHeight,
+            },
+          });
+        };
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  };
+
   return (
     <>
       <div style={{ position: "fixed", inset: 0 }}>
-        <Tldraw />
+        <Tldraw onMount={(editor) => setEditor(editor)}>
+          <CustomUi handleUploadImage={handleUploadImage} />
+        </Tldraw>
       </div>
     </>
   );
 }
 
-export default App;
+const CustomUi = track(({ handleUploadImage }) => {
+  const editor = useEditor();
+
+  useEffect(() => {
+    const handleKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Delete":
+        case "Backspace": {
+          editor.deleteShapes(editor.getSelectedShapeIds());
+          break;
+        }
+        case "v": {
+          editor.setCurrentTool("select");
+          break;
+        }
+        case "e": {
+          editor.setCurrentTool("eraser");
+          break;
+        }
+        case "x":
+        case "p":
+        case "b":
+        case "d": {
+          editor.setCurrentTool("draw");
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  });
+
+  return (
+    <div className="custom-layout">
+      <div className="custom-toolbar">
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "select"}
+          onClick={() => editor.setCurrentTool("select")}
+        >
+          Select
+        </button>
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "draw"}
+          onClick={() => editor.setCurrentTool("draw")}
+        >
+          Pencil
+        </button>
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "eraser"}
+          onClick={() => editor.setCurrentTool("eraser")}
+        >
+          Eraser
+        </button>
+        <button className="custom-button" onClick={handleUploadImage}>
+          업로드
+        </button>
+      </div>
+    </div>
+  );
+});
