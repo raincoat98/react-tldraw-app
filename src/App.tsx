@@ -2,8 +2,30 @@ import { useEffect, useState } from "react";
 import { AssetRecordType, Editor, Tldraw, track, useEditor } from "tldraw";
 import "./custom-ui.css";
 
+const extendSelectTool = (editor: Editor) => {
+  const handleDoubleClick = () => {
+    const isSelectTool = editor.getCurrentToolId() === "select";
+
+    if (isSelectTool) {
+      editor.setCurrentTool("select.idle");
+    }
+  };
+
+  window.addEventListener("dblclick", handleDoubleClick);
+  return () => {
+    window.removeEventListener("dblclick", handleDoubleClick);
+  };
+};
+
 export default function App() {
   const [editor, setEditor] = useState<Editor | null>(null);
+
+  useEffect(() => {
+    if (editor) {
+      // 더블클릭시 select 모드 변경 하지 않기
+      extendSelectTool(editor);
+    }
+  }, [editor]);
 
   const handleUploadImage = () => {
     const input = document.createElement("input");
