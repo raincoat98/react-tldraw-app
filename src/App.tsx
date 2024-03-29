@@ -44,6 +44,7 @@ export default function App() {
             type: "image",
             x: (window.innerWidth - imageWidth) / 2,
             y: (window.innerHeight - imageHeight) / 2,
+            isLocked: true,
             props: {
               assetId,
               w: imageWidth,
