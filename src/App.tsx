@@ -84,7 +84,7 @@ export default function App() {
   return (
     <>
       <div style={{ position: "fixed", inset: 0 }}>
-        <Tldraw onMount={(editor) => setEditor(editor)}>
+        <Tldraw onMount={(editor) => setEditor(editor)} inferDarkMode>
           <CustomUi handleUploadImage={handleUploadImage} />
         </Tldraw>
       </div>
