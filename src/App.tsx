@@ -212,6 +212,9 @@ const CustomUi = track(({ handleUploadImage }) => {
         <button className="custom-button" onClick={() => handleZoomIn(editor)}>
           확대
         </button>
+        <button className="custom-button" onClick={() => editor.resetZoom()}>
+          100%
+        </button>
       </div>
     </div>
   );
