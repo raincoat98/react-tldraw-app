@@ -38,6 +38,19 @@ const extendSelectTool = (editor: Editor) => {
   };
 };
 
+function handleClear(editor: Editor) {
+  const shapeIds = editor.getCurrentPageShapeIds();
+
+  if (!shapeIds) return;
+
+  for (const shapeId of shapeIds) {
+    editor.deleteShape(shapeId);
+  }
+
+  if (!editor.getAssets()) return;
+  editor.deleteAssets(editor.getAssets());
+}
+
 export default function App() {
   const [editor, setEditor] = useState<Editor | null>(null);
 
@@ -174,6 +187,10 @@ const CustomUi = track(({ handleUploadImage }) => {
         </button>
         <button className="custom-button" onClick={handleUploadImage}>
           업로드
+        </button>
+        {/* 초기화 */}
+        <button className="custom-button" onClick={() => handleClear(editor)}>
+          초기화
         </button>
       </div>
     </div>
