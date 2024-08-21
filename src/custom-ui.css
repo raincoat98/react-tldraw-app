@@ -29,3 +29,8 @@
   background-color: black;
   color: white;
 }
+
+.custom-button:hover {
+  background-color: black;
+  color: white;
+}

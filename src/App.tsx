@@ -51,6 +51,20 @@ function handleClear(editor: Editor) {
   editor.deleteAssets(editor.getAssets());
 }
 
+function handleZoomOut(editor: Editor) {
+  if (editor.getZoomLevel() > 0.25) {
+    editor.zoomOut();
+    return;
+  }
+}
+
+function handleZoomIn(editor: Editor) {
+  if (editor.getZoomLevel() < 5) {
+    editor.zoomIn();
+    return;
+  }
+}
+
 export default function App() {
   const [editor, setEditor] = useState<Editor | null>(null);
 
@@ -188,9 +202,15 @@ const CustomUi = track(({ handleUploadImage }) => {
         <button className="custom-button" onClick={handleUploadImage}>
           업로드
         </button>
-        {/* 초기화 */}
         <button className="custom-button" onClick={() => handleClear(editor)}>
           초기화
+        </button>
+
+        <button className="custom-button" onClick={() => handleZoomOut(editor)}>
+          축소
+        </button>
+        <button className="custom-button" onClick={() => handleZoomIn(editor)}>
+          확대
         </button>
       </div>
     </div>
