@@ -14,9 +14,11 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.15.14",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.6.82",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tldraw": "^2.0.2"
+    "tldraw": "^2.4.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
