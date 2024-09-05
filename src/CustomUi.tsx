@@ -12,6 +12,7 @@ function handleClear(editor: Editor) {
   // editor.deleteAssets(editor.getAssets());
 
   editor.resetZoom();
+  editor.setCamera({ x: 0, y: 0 });
 }
 function handleZoomOut(editor: Editor) {
   if (editor.getZoomLevel() > 0.25) {
