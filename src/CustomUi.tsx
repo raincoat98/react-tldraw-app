@@ -87,6 +87,13 @@ export const CustomUi = track(() => {
         >
           Eraser
         </button>
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "sticker"}
+          onClick={() => editor.setCurrentTool("sticker")}
+        >
+          sticker
+        </button>
         <button className="custom-button" onClick={() => handleClear(editor)}>
           초기화
         </button>

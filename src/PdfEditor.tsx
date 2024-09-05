@@ -12,10 +12,43 @@ import {
   track,
   useEditor,
   Editor,
+  DefaultKeyboardShortcutsDialog,
+  DefaultKeyboardShortcutsDialogContent,
+  DefaultToolbar,
+  DefaultToolbarContent,
+  TldrawUiMenuItem,
+  useIsToolSelected,
+  useTools,
+  TLUiOverrides,
+  TLUiAssetUrlOverrides,
 } from "tldraw";
 import { ExportPdfButton } from "./ExportPdfButton";
 import { CustomUi } from "./CustomUi";
 import { Pdf } from "./PdfPicker";
+import { StickerTool } from "./sticker-tool-util";
+
+const uiOverrides: TLUiOverrides = {
+  tools(editor, tools) {
+    // Create a tool item in the ui's context.
+    tools.sticker = {
+      id: "sticker",
+      icon: "heart-icon",
+      label: "Sticker",
+      kbd: "s",
+      onSelect: () => {
+        editor.setCurrentTool("sticker");
+      },
+    };
+    return tools;
+  },
+};
+
+// [3]
+export const customAssetUrls: TLUiAssetUrlOverrides = {
+  icons: {
+    "heart-icon": "/heart-icon.svg",
+  },
+};
 
 const extendSelectTool = (editor: Editor) => {
   const DOUBLE_TAP_DELAY = 300;
@@ -48,6 +81,8 @@ const extendSelectTool = (editor: Editor) => {
   };
 };
 
+const customTools = [StickerTool];
+
 export function PdfEditor({ pdf }: { pdf: Pdf }) {
   const [editor, setEditor] = useState<Editor | null>(null);
 
@@ -69,12 +104,35 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
       // StylePanel: null,
       // NavigationPanel: null,
       Toolbar: null,
-      KeyboardShortcutsDialog: null,
+      // Toolbar: (props) => {
+      //   const tools = useTools();
+      //   const isStickerSelected = useIsToolSelected(tools["sticker"]);
+      //   return (
+      //     <DefaultToolbar {...props}>
+      //       <TldrawUiMenuItem
+      //         {...tools["sticker"]}
+      //         isSelected={isStickerSelected}
+      //       />
+      //       <DefaultToolbarContent />
+      //     </DefaultToolbar>
+      //   );
+      // },
+      KeyboardShortcutsDialog: (props) => {
+        const tools = useTools();
+        return (
+          <DefaultKeyboardShortcutsDialog {...props}>
+            <DefaultKeyboardShortcutsDialogContent />
+            {/* Ideally, we'd interleave this into the tools group */}
+            <TldrawUiMenuItem {...tools["sticker"]} />
+          </DefaultKeyboardShortcutsDialog>
+        );
+      },
       QuickActions: null,
       HelperButtons: null,
       DebugPanel: null,
       DebugMenu: null,
       // MenuPanel: null,
+
       CursorChatBubble: null,
       TopPanel: () => <CustomUi />,
       InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf} />,
@@ -213,6 +271,9 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
       }}
       components={components}
       // inferDarkMode
+      tools={customTools}
+      overrides={uiOverrides}
+      assetUrls={customAssetUrls}
     >
       <CustomUi />
     </Tldraw>
