@@ -14,13 +14,9 @@ import {
   Editor,
   DefaultKeyboardShortcutsDialog,
   DefaultKeyboardShortcutsDialogContent,
-  DefaultToolbar,
-  DefaultToolbarContent,
   TldrawUiMenuItem,
-  useIsToolSelected,
   useTools,
   TLUiOverrides,
-  TLUiAssetUrlOverrides,
 } from "tldraw";
 import { ExportPdfButton } from "./ExportPdfButton";
 import { CustomUi } from "./CustomUi";
@@ -44,11 +40,11 @@ const uiOverrides: TLUiOverrides = {
 };
 
 // [3]
-export const customAssetUrls: TLUiAssetUrlOverrides = {
-  icons: {
-    "heart-icon": "/heart-icon.svg",
-  },
-};
+// export const customAssetUrls: TLUiAssetUrlOverrides = {
+//   icons: {
+//     "heart-icon": "/heart-icon.svg",
+//   },
+// };
 
 const extendSelectTool = (editor: Editor) => {
   const DOUBLE_TAP_DELAY = 300;
