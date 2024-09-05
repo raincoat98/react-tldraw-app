@@ -39,7 +39,7 @@ const uiOverrides: TLUiOverrides = {
   },
 };
 
-// [3]
+// // [3]
 // export const customAssetUrls: TLUiAssetUrlOverrides = {
 //   icons: {
 //     "heart-icon": "/heart-icon.svg",
@@ -269,7 +269,7 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
       // inferDarkMode
       tools={customTools}
       overrides={uiOverrides}
-      assetUrls={customAssetUrls}
+      // assetUrls={customAssetUrls}
     >
       <CustomUi />
     </Tldraw>
