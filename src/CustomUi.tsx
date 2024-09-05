@@ -10,6 +10,8 @@ function handleClear(editor: Editor) {
   }
   // if (!editor.getAssets()) return;
   // editor.deleteAssets(editor.getAssets());
+
+  editor.resetZoom();
 }
 function handleZoomOut(editor: Editor) {
   if (editor.getZoomLevel() > 0.25) {
