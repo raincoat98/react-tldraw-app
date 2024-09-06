@@ -17,15 +17,16 @@ import {
   TldrawUiMenuItem,
   useTools,
   TLUiOverrides,
+  TLParentId,
 } from "tldraw";
 import { ExportPdfButton } from "./ExportPdfButton";
+import { ExportImageButton } from "./ExportImageButton";
 import { CustomUi } from "./CustomUi";
-import { Pdf } from "./PdfPicker";
+import { Pdf, PdfPage } from "./PdfPicker";
 import { StickerTool } from "./sticker-tool-util";
 
 const uiOverrides: TLUiOverrides = {
   tools(editor, tools) {
-    // Create a tool item in the ui's context.
     tools.sticker = {
       id: "sticker",
       icon: "heart-icon",
@@ -39,13 +40,6 @@ const uiOverrides: TLUiOverrides = {
   },
 };
 
-// // [3]
-// export const customAssetUrls: TLUiAssetUrlOverrides = {
-//   icons: {
-//     "heart-icon": "/heart-icon.svg",
-//   },
-// };
-
 const extendSelectTool = (editor: Editor) => {
   const DOUBLE_TAP_DELAY = 300;
   let lastTouchEndTime = 0;
@@ -55,7 +49,6 @@ const extendSelectTool = (editor: Editor) => {
       editor.setCurrentTool("select.idle");
     }
   };
-  // Handlers
   const handleDoubleClick = (event: MouseEvent) => {
     event.preventDefault();
     changeSelectToolState();
@@ -70,7 +63,6 @@ const extendSelectTool = (editor: Editor) => {
   };
   window.addEventListener("dblclick", handleDoubleClick);
   window.addEventListener("touchend", handleTouchEnd);
-  // Cleanup function
   return () => {
     window.removeEventListener("dblclick", handleDoubleClick);
     window.removeEventListener("touchend", handleTouchEnd);
@@ -79,8 +71,25 @@ const extendSelectTool = (editor: Editor) => {
 
 const customTools = [StickerTool];
 
-export function PdfEditor({ pdf }: { pdf: Pdf }) {
+export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [pages, setPages] = useState<PdfPage[]>([]);
+
+  useEffect(() => {
+    if (pdf) {
+      setPages(pdf.pages);
+    } else if (image) {
+      // Convert the blob URL to a data URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setPages([{ ...image, src: dataUrl }]);
+      };
+      fetch(image.src)
+        .then((res) => res.blob())
+        .then((blob) => reader.readAsDataURL(blob));
+    }
+  }, [pdf, image]);
 
   useEffect(() => {
     if (editor) {
@@ -118,7 +127,6 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
         return (
           <DefaultKeyboardShortcutsDialog {...props}>
             <DefaultKeyboardShortcutsDialogContent />
-            {/* Ideally, we'd interleave this into the tools group */}
             <TldrawUiMenuItem {...tools["sticker"]} />
           </DefaultKeyboardShortcutsDialog>
         );
@@ -127,149 +135,153 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
       HelperButtons: null,
       DebugPanel: null,
       DebugMenu: null,
-      // MenuPanel: null,
-
       CursorChatBubble: null,
       TopPanel: () => <CustomUi />,
-      InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf} />,
-      SharePanel: () => <ExportPdfButton pdf={pdf} />,
+      InFrontOfTheCanvas: () => <PageOverlayScreen pages={pages} />,
+      SharePanel: pdf
+        ? () => <ExportPdfButton pdf={pdf} />
+        : image
+        ? () => <ExportImageButton image={image} />
+        : null,
     }),
-    [pdf]
+    [pdf, pages, image]
   );
+  const makeSureShapesAreAtBottom = (editor: Editor, shapeIds: string[]) => {
+    const shapeIdSet = new Set(shapeIds);
+
+    const shapes = shapeIds
+      .map((id) => {
+        const shape = editor.getShape(id as TLParentId); // Cast `id` to `TLParentId`
+        if (!shape) {
+          throw new Error(`Shape with id ${id} not found.`);
+        }
+        return shape;
+      })
+      .sort(sortByIndex);
+
+    const pageId = editor.getCurrentPageId();
+
+    const siblings = editor.getSortedChildIdsForParent(pageId);
+    const currentBottomShapes = siblings
+      .slice(0, shapes.length)
+      .map((id) => editor.getShape(id as TLParentId)!);
+
+    if (currentBottomShapes.every((shape, i) => shape.id === shapes[i].id))
+      return;
+
+    const otherSiblings = siblings.filter((id) => !shapeIdSet.has(id));
+    const bottomSibling = otherSiblings[0];
+    const lowestIndex = editor.getShape(bottomSibling as TLParentId)!.index;
+
+    const indexes = getIndicesBetween(undefined, lowestIndex, shapes.length);
+    editor.updateShapes(
+      shapes.map((shape, i) => ({
+        id: shape.id,
+        type: shape.type,
+        isLocked: shape.isLocked,
+        index: indexes[i],
+      }))
+    );
+  };
+
+  const updateCameraBounds = (
+    editor: Editor,
+    targetBounds: Box,
+    isMobile: boolean
+  ) => {
+    editor.setCameraOptions({
+      constraints: {
+        bounds: targetBounds,
+        padding: { x: isMobile ? 16 : 164, y: 64 },
+        origin: { x: 0.5, y: 0 },
+        initialZoom: "fit-x-100",
+        baseZoom: "default",
+        behavior: "contain",
+      },
+    });
+    editor.setCamera(editor.getCamera(), { reset: true });
+  };
+
+  useEffect(() => {
+    if (editor && pages.length > 0) {
+      editor.createAssets(
+        pages.map((page) => ({
+          id: page.assetId,
+          typeName: "asset",
+          type: "image",
+          meta: {},
+          props: {
+            w: page.bounds.w,
+            h: page.bounds.h,
+            mimeType: "image/png",
+            src: page.src, // Use the data URL here
+            name: "page",
+            isAnimated: false,
+          },
+        }))
+      );
+
+      editor.createShapes(
+        pages.map(
+          (page): TLShapePartial<TLImageShape> => ({
+            id: page.shapeId,
+            type: "image",
+            x: page.bounds.x,
+            y: page.bounds.y,
+            isLocked: true,
+            props: {
+              assetId: page.assetId,
+              w: page.bounds.w,
+              h: page.bounds.h,
+            },
+          })
+        )
+      );
+
+      const shapeIds = pages.map((page) => page.shapeId);
+
+      editor.sideEffects.registerBeforeChangeHandler("shape", (prev, next) => {
+        if (!shapeIds.includes(next.id)) return next;
+        if (next.isLocked) return next;
+        return { ...prev, isLocked: true };
+      });
+
+      makeSureShapesAreAtBottom(editor, shapeIds);
+
+      editor.sideEffects.registerAfterCreateHandler("shape", () =>
+        makeSureShapesAreAtBottom(editor, shapeIds)
+      );
+      editor.sideEffects.registerAfterChangeHandler("shape", () =>
+        makeSureShapesAreAtBottom(editor, shapeIds)
+      );
+
+      const targetBounds = pages.reduce(
+        (acc, page) => acc.union(page.bounds),
+        pages[0].bounds.clone()
+      );
+
+      let isMobile = editor.getViewportScreenBounds().width < 840;
+
+      react("update camera", () => {
+        const isMobileNow = editor.getViewportScreenBounds().width < 840;
+        if (isMobileNow === isMobile) return;
+        isMobile = isMobileNow;
+        updateCameraBounds(editor, targetBounds, isMobile);
+      });
+
+      updateCameraBounds(editor, targetBounds, isMobile);
+    }
+  }, [editor, pages]);
 
   return (
     <Tldraw
       onMount={(editor) => {
         setEditor(editor);
         editor.updateInstanceState({ isDebugMode: false });
-        editor.createAssets(
-          pdf.pages.map((page) => ({
-            id: page.assetId,
-            typeName: "asset",
-            type: "image",
-            meta: {},
-            props: {
-              w: page.bounds.w,
-              h: page.bounds.h,
-              mimeType: "image/png",
-              src: page.src,
-              name: "page",
-              isAnimated: false,
-            },
-          }))
-        );
-        editor.createShapes(
-          pdf.pages.map(
-            (page): TLShapePartial<TLImageShape> => ({
-              id: page.shapeId,
-              type: "image",
-              x: page.bounds.x,
-              y: page.bounds.y,
-              isLocked: true,
-              props: {
-                assetId: page.assetId,
-                w: page.bounds.w,
-                h: page.bounds.h,
-              },
-            })
-          )
-        );
-
-        const shapeIds = pdf.pages.map((page) => page.shapeId);
-        const shapeIdSet = new Set(shapeIds);
-
-        // Don't let the user unlock the pages
-        editor.sideEffects.registerBeforeChangeHandler(
-          "shape",
-          (prev, next) => {
-            if (!shapeIdSet.has(next.id)) return next;
-            if (next.isLocked) return next;
-            return { ...prev, isLocked: true };
-          }
-        );
-
-        // Make sure the shapes are below any of the other shapes
-        function makeSureShapesAreAtBottom() {
-          const shapes = shapeIds
-            .map((id) => editor.getShape(id)!)
-            .sort(sortByIndex);
-          const pageId = editor.getCurrentPageId();
-
-          const siblings = editor.getSortedChildIdsForParent(pageId);
-          const currentBottomShapes = siblings
-            .slice(0, shapes.length)
-            .map((id) => editor.getShape(id)!);
-
-          if (
-            currentBottomShapes.every((shape, i) => shape.id === shapes[i].id)
-          )
-            return;
-
-          const otherSiblings = siblings.filter((id) => !shapeIdSet.has(id));
-          const bottomSibling = otherSiblings[0];
-          const lowestIndex = editor.getShape(bottomSibling)!.index;
-
-          const indexes = getIndicesBetween(
-            undefined,
-            lowestIndex,
-            shapes.length
-          );
-          editor.updateShapes(
-            shapes.map((shape, i) => ({
-              id: shape.id,
-              type: shape.type,
-              isLocked: shape.isLocked,
-              index: indexes[i],
-            }))
-          );
-        }
-
-        makeSureShapesAreAtBottom();
-        editor.sideEffects.registerAfterCreateHandler(
-          "shape",
-          makeSureShapesAreAtBottom
-        );
-        editor.sideEffects.registerAfterChangeHandler(
-          "shape",
-          makeSureShapesAreAtBottom
-        );
-
-        // Constrain the camera to the bounds of the pages
-        const targetBounds = pdf.pages.reduce(
-          (acc, page) => acc.union(page.bounds),
-          pdf.pages[0].bounds.clone()
-        );
-
-        function updateCameraBounds(isMobile: boolean) {
-          editor.setCameraOptions({
-            constraints: {
-              bounds: targetBounds,
-              padding: { x: isMobile ? 16 : 164, y: 64 },
-              origin: { x: 0.5, y: 0 },
-              initialZoom: "fit-x-100",
-              baseZoom: "default",
-              behavior: "contain",
-            },
-          });
-          editor.setCamera(editor.getCamera(), { reset: true });
-        }
-
-        let isMobile = editor.getViewportScreenBounds().width < 840;
-
-        react("update camera", () => {
-          const isMobileNow = editor.getViewportScreenBounds().width < 840;
-          if (isMobileNow === isMobile) return;
-          isMobile = isMobileNow;
-          updateCameraBounds(isMobile);
-        });
-
-        updateCameraBounds(isMobile);
       }}
       components={components}
-      // inferDarkMode
       tools={customTools}
       overrides={uiOverrides}
-      // assetUrls={customAssetUrls}
     >
       <CustomUi />
     </Tldraw>
@@ -277,16 +289,16 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
 }
 
 const PageOverlayScreen = track(function PageOverlayScreen({
-  pdf,
+  pages,
 }: {
-  pdf: Pdf;
+  pages: PdfPage[];
 }) {
   const editor = useEditor();
 
   const viewportPageBounds = editor.getViewportPageBounds();
   const viewportScreenBounds = editor.getViewportScreenBounds();
 
-  const relevantPageBounds = pdf.pages
+  const relevantPageBounds = pages
     .map((page) => {
       if (!viewportPageBounds.collides(page.bounds)) return null;
       const topLeft = editor.pageToViewport(page.bounds);

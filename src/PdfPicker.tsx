@@ -23,7 +23,13 @@ export interface Pdf {
 
 const pageSpacing = 32;
 
-export function PdfPicker({ onOpenPdf }: { onOpenPdf: (pdf: Pdf) => void }) {
+export function PdfPicker({
+  onOpenPdf,
+  onOpenImage,
+}: {
+  onOpenPdf: (pdf: Pdf) => void;
+  onOpenImage: (image: PdfPage) => void;
+}) {
   const [isLoading, setIsLoading] = useState(false);
 
   async function loadPdf(name: string, source: ArrayBuffer): Promise<Pdf> {
@@ -111,6 +117,39 @@ export function PdfPicker({ onOpenPdf }: { onOpenPdf: (pdf: Pdf) => void }) {
     }
   }
 
+  function onClickOpenImage() {
+    const input = window.document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.addEventListener("change", async (e) => {
+      const fileList = (e.target as HTMLInputElement).files;
+      if (!fileList || fileList.length === 0) return;
+      const file = fileList[0];
+
+      setIsLoading(true);
+      try {
+        const src = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const width = img.width;
+          const height = img.height;
+          const image: PdfPage = {
+            src,
+            bounds: new Box(0, 0, width, height),
+            assetId: AssetRecordType.createId(),
+            shapeId: createShapeId(),
+          };
+          onOpenImage(image);
+          setIsLoading(false);
+        };
+        img.src = src;
+      } catch {
+        setIsLoading(false);
+      }
+    });
+    input.click();
+  }
+
   if (isLoading) {
     return <div className="PdfPicker">Loading...</div>;
   }
@@ -120,6 +159,8 @@ export function PdfPicker({ onOpenPdf }: { onOpenPdf: (pdf: Pdf) => void }) {
       <button onClick={onClickOpenPdf}>Open PDF</button>
       <div>or</div>
       <button onClick={onClickUseExample}>Use an example</button>
+      <div>or</div>
+      <button onClick={onClickOpenImage}>Open Image</button>
     </div>
   );
 }
