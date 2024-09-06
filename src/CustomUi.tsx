@@ -5,15 +5,37 @@ import "./custom-ui.css";
 function handleClear(editor: Editor) {
   const shapeIds = editor.getCurrentPageShapeIds();
   if (!shapeIds) return;
+
   for (const shapeId of shapeIds) {
     editor.deleteShape(shapeId);
   }
+
+  // Uncomment if you need to delete assets
   // if (!editor.getAssets()) return;
   // editor.deleteAssets(editor.getAssets());
 
-  editor.resetZoom();
-  editor.setCamera({ x: 0, y: 0 });
+  const isMobile = editor.getViewportScreenBounds().width < 840;
+
+  const camera = editor.getCamera();
+  if (camera) {
+    const pageBounds = editor.getCurrentPageBounds();
+
+    if (pageBounds) {
+      editor.setCameraOptions({
+        constraints: {
+          bounds: pageBounds,
+          padding: { x: isMobile ? 16 : 164, y: 64 },
+          origin: { x: 0.5, y: 0 },
+          initialZoom: "fit-x-100",
+          baseZoom: "default",
+          behavior: "contain",
+        },
+      });
+      editor.setCamera(editor.getCamera(), { reset: true });
+    }
+  }
 }
+
 function handleZoomOut(editor: Editor) {
   if (editor.getZoomLevel() > 0.25) {
     editor.zoomOut();
