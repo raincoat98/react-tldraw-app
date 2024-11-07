@@ -24,6 +24,7 @@ import { ExportImageButton } from "./ExportImageButton";
 import { CustomUi } from "./CustomUi";
 import { Pdf, PdfPage } from "./PdfPicker";
 import { StickerTool } from "./sticker-tool-util";
+import { DateTool } from "./date-tool-util";
 
 const uiOverrides: TLUiOverrides = {
   tools(editor, tools) {
@@ -34,6 +35,15 @@ const uiOverrides: TLUiOverrides = {
       kbd: "s",
       onSelect: () => {
         editor.setCurrentTool("sticker");
+      },
+    };
+    tools.date = {
+      id: "date",
+      icon: "calendar-icon",
+      label: "Date",
+      kbd: "d",
+      onSelect: () => {
+        editor.setCurrentTool("date");
       },
     };
     return tools;
@@ -69,7 +79,7 @@ const extendSelectTool = (editor: Editor) => {
   };
 };
 
-const customTools = [StickerTool];
+const customTools = [StickerTool, DateTool];
 
 export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
   const [editor, setEditor] = useState<Editor | null>(null);

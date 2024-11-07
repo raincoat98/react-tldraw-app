@@ -114,6 +114,20 @@ export const CustomUi = track(() => {
         </button>
         <button
           className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "text"}
+          onClick={() => editor.setCurrentTool("text")}
+        >
+          text
+        </button>
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "date"}
+          onClick={() => editor.setCurrentTool("date")}
+        >
+          date
+        </button>
+        <button
+          className="custom-button"
           data-isactive={editor.getCurrentToolId() === "sticker"}
           onClick={() => editor.setCurrentTool("sticker")}
         >
