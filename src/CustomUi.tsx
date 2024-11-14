@@ -86,17 +86,17 @@ export const CustomUi = track(() => {
       <div className="custom-toolbar">
         <button
           className="custom-button"
-          data-isactive={editor.getCurrentToolId() === "select"}
-          onClick={() => editor.setCurrentTool("select")}
-        >
-          Select
-        </button>
-        <button
-          className="custom-button"
           data-isactive={editor.getCurrentToolId() === "hand"}
           onClick={() => editor.setCurrentTool("hand")}
         >
           hand
+        </button>
+        <button
+          className="custom-button"
+          data-isactive={editor.getCurrentToolId() === "select"}
+          onClick={() => editor.setCurrentTool("select")}
+        >
+          Select
         </button>
         <button
           className="custom-button"
