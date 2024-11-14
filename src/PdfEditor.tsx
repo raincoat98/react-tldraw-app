@@ -81,6 +81,65 @@ const extendSelectTool = (editor: Editor) => {
 
 const customTools = [StickerTool, DateTool];
 
+const ImageListPanel = track(() => {
+  return (
+    <div
+      className="image-list-panel"
+      style={{
+        width: "100%",
+        height: "300px",
+        backgroundColor: "white",
+        boxShadow: "0px -2px 10px rgba(0, 0, 0, 0.1)",
+        padding: "20px",
+        overflowY: "auto",
+      }}
+    >
+      <h3>이미지 리스트</h3>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        {/* 여기에 이미지 리스트를 추가하세요 */}
+        <div className="image-item">이미지 1</div>
+        <div className="image-item">이미지 2</div>
+        <div className="image-item">이미지 3</div>
+      </div>
+    </div>
+  );
+});
+
+const BottomButton = track(() => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "50px",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+        }}
+      >
+        <button className="custom-button" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? "패널 닫기" : "이미지 선택"}
+        </button>
+      </div>
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 999,
+          transition: "transform 0.3s ease-in-out",
+          transform: `translateY(${isOpen ? "0" : "100%"})`,
+        }}
+      >
+        <ImageListPanel />
+      </div>
+    </>
+  );
+});
+
 export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [pages, setPages] = useState<PdfPage[]>([]);
@@ -113,7 +172,7 @@ export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
       PageMenu: null,
       ActionsMenu: null,
       HelpMenu: null,
-      // ZoomMenu: null,
+      ZoomMenu: null,
       // MainMenu: null,
       Minimap: null,
       // StylePanel: null,
@@ -147,7 +206,12 @@ export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
       DebugMenu: null,
       CursorChatBubble: null,
       TopPanel: () => <CustomUi />,
-      InFrontOfTheCanvas: () => <PageOverlayScreen pages={pages} />,
+      InFrontOfTheCanvas: () => (
+        <>
+          <PageOverlayScreen pages={pages} />
+          <BottomButton />
+        </>
+      ),
       SharePanel: pdf
         ? () => <ExportPdfButton pdf={pdf} />
         : image
