@@ -173,7 +173,7 @@ export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
       ActionsMenu: null,
       HelpMenu: null,
       ZoomMenu: null,
-      // MainMenu: null,
+      MainMenu: null,
       Minimap: null,
       // StylePanel: null,
       // NavigationPanel: null,
