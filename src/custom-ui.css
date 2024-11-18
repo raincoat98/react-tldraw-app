@@ -7,14 +7,15 @@
 
 .custom-toolbar {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px;
   gap: 8px;
+  flex-wrap: wrap; /* 요소가 줄을 넘어가면 자동으로 줄바꿈 */
 }
 
 .custom-button {
@@ -23,6 +24,18 @@
   background: white;
   border: 1px solid black;
   border-radius: 64px;
+}
+
+/* 반응형 레이아웃 */
+@media (max-width: 600px) {
+  .custom-toolbar {
+    justify-content: flex-start; /* 작은 화면에서는 왼쪽 정렬 */
+    padding: 4px;
+    gap: 4px;
+  }
+  .custom-button {
+    padding: 4px 8px; /* 버튼 크기 조정 */
+  }
 }
 
 .custom-button[data-isactive="true"] {

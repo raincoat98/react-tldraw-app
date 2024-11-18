@@ -356,6 +356,7 @@ export function PdfEditor({ pdf, image }: { pdf?: Pdf; image?: PdfPage }) {
       components={components}
       tools={customTools}
       overrides={uiOverrides}
+      inferDarkMode
     >
       <CustomUi />
     </Tldraw>

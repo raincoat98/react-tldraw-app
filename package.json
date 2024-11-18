@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.0",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^5.16.7",
-    "@mui/material": "^5.15.14",
+    "@mui/material": "^5.16.7",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.6.82",
     "react": "^18.2.0",

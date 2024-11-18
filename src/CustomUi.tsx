@@ -1,5 +1,16 @@
 import { useEffect } from "react";
 import { track, useEditor, Editor } from "tldraw";
+import BackHandIcon from "@mui/icons-material/BackHand";
+import NearMeIcon from "@mui/icons-material/NearMe";
+import CreateIcon from "@mui/icons-material/Create";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import FontDownloadIcon from "@mui/icons-material/FontDownload";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import RedoIcon from "@mui/icons-material/Redo";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEraser } from "@fortawesome/free-solid-svg-icons";
 import "./custom-ui.css";
 
 function handleClear(editor: Editor) {
@@ -88,59 +99,78 @@ export const CustomUi = track(() => {
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "hand"}
           onClick={() => editor.setCurrentTool("hand")}
+          style={{ height: "40px" }}
         >
-          hand
+          <BackHandIcon />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "select"}
           onClick={() => editor.setCurrentTool("select")}
+          style={{ height: "40px" }}
         >
-          Select
+          <NearMeIcon />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "draw"}
           onClick={() => editor.setCurrentTool("draw")}
+          style={{ height: "40px" }}
         >
-          Pencil
+          <CreateIcon />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "eraser"}
           onClick={() => editor.setCurrentTool("eraser")}
+          style={{ height: "40px" }}
         >
-          Eraser
+          <FontAwesomeIcon icon={faEraser} size="lg" />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "text"}
           onClick={() => editor.setCurrentTool("text")}
+          style={{ height: "40px" }}
         >
-          text
+          <FontDownloadIcon />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "date"}
           onClick={() => editor.setCurrentTool("date")}
+          style={{ height: "40px" }}
         >
-          date
+          <DateRangeIcon />
         </button>
         <button
           className="custom-button"
           data-isactive={editor.getCurrentToolId() === "sticker"}
           onClick={() => editor.setCurrentTool("sticker")}
+          style={{ height: "40px" }}
         >
-          sticker
+          <FavoriteIcon />
         </button>
-        <button className="custom-button" onClick={() => handleClear(editor)}>
-          초기화
+        <button
+          className="custom-button"
+          onClick={() => handleClear(editor)}
+          style={{ height: "40px" }}
+        >
+          <RedoIcon />
         </button>
-        <button className="custom-button" onClick={() => handleZoomOut(editor)}>
-          축소
+        <button
+          className="custom-button"
+          onClick={() => handleZoomOut(editor)}
+          style={{ height: "40px" }}
+        >
+          <RemoveIcon />
         </button>
-        <button className="custom-button" onClick={() => handleZoomIn(editor)}>
-          확대
+        <button
+          className="custom-button"
+          onClick={() => handleZoomIn(editor)}
+          style={{ height: "40px" }}
+        >
+          <AddIcon />
         </button>
       </div>
     </div>
