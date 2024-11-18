@@ -9,6 +9,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import RedoIcon from "@mui/icons-material/Redo";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import ColorLensIcon from "@mui/icons-material/ColorLens";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEraser } from "@fortawesome/free-solid-svg-icons";
 import "./custom-ui.css";
@@ -57,6 +58,16 @@ function handleZoomIn(editor: Editor) {
   if (editor.getZoomLevel() < 5) {
     editor.zoomIn();
     return;
+  }
+}
+
+function handleToggle() {
+  const stylePanel = document.querySelector(
+    ".tlui-style-panel__wrapper"
+  ) as HTMLElement;
+  if (stylePanel) {
+    stylePanel.style.display =
+      stylePanel.style.display === "none" ? "block" : "none";
   }
 }
 
@@ -134,6 +145,13 @@ export const CustomUi = track(() => {
           style={{ height: "40px" }}
         >
           <FontDownloadIcon />
+        </button>
+        <button
+          className="custom-button"
+          onClick={() => handleToggle()}
+          style={{ height: "40px" }}
+        >
+          <ColorLensIcon />
         </button>
         <button
           className="custom-button"
